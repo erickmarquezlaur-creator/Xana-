@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XANA' - Restaurante</title>
+    <!-- Para que se vea bonito al compartir en Facebook y redes -->
+    <meta property="og:title" content="XANA' - Restaurante">
+    <meta property="og:description" content="Sabores que te hacen volver • Haz tu pedido aquí">
+    <meta property="og:type" content="website">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f0f;
+            color: #fff;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        .platillo-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .platillo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(201, 158, 58, 0.2);
+        }
+        .modal-imagen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-imagen.activo { display: flex; }
+        .btn-ubicacion {
+            background: linear-gradient(135deg, #d4a027, #f4c542);
+            color: #000; font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-ubicacion:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(212, 160, 39, 0.4);
+        }
+        .confirmacion {
+            display: none;
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .btn-agregar {
+            background: #d4a027; transition: all 0.2s;
+        }
+        .btn-agregar:hover { background: #f4c542; transform: scale(1.05); }
+        .seccion-pedido { background: #1a1a1a; border-radius: 16px; }
+        .redes-btn { transition: all 0.2s; }
+        .redes-btn:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body>
+
+<!-- 🔹 ENCABEZADO -->
+<header class="px-6 py-4 border-b border-yellow-900/30 sticky top-0 bg-black/90 z-50">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🍽️</span>
+            <h1 class="text-2xl font-bold text-yellow-400">XANA'</h1>
+        </div>
+        <nav class="hidden md:flex gap-8 text-sm">
+            <a href="#inicio" class="hover:text-yellow-400">Inicio</a>
+            <a href="#menu" class="text-yellow-400 font-semibold">Menú</a>
+            <a href="#pedido" class="hover:text-yellow-400">Mi Pedido</a>
+            <a href="#ubicacion" class="hover:text-yellow-400">Ubicación</a>
+        </nav>
+        <a href="#pedido" class="bg-yellow-500 text-black px-4 py-2 rounded-full text-sm font-bold">
+            🛒 <span id="contadorCarrito">0</span>
+        </a>
+    </div>
+</header>
+
+<!-- 🔹 PORTADA -->
+<section id="inicio" class="px-6 py-12 text-center">
+    <p class="text-yellow-400 text-sm tracking-widest mb-3">SABORES QUE TE HACEN VOLVER</p>
+    <h2 class="text-4xl md:text-5xl font-bold mb-4">Nuestro Menú</h2>
+    <p class="text-gray-400 max-w-xl mx-auto mb-6">Platillos únicos, ingredientes frescos y el auténtico sabor que nos caracteriza.</p>
+    
+    <!-- 🔹 COMPARTIR EN TODAS LAS REDES -->
+    <div class="mb-8">
+        <p class="text-gray-300 mb-3 font-semibold">🔗 Comparte con tus amigos:</p>
+        <div class="flex justify-center gap-3 flex-wrap">
+            <button onclick="compartirFacebook()" class="redes-btn bg-blue-600 px-4 py-2 rounded-full font-bold text-white flex items-center gap-2">
+                <i class="fab fa-facebook-f"></i> Facebook
+            </button>
+            <button onclick="compartirWhatsApp()" class="redes-btn bg-green-500 px-4 py-2 rounded-full font-bold text-white flex items-center gap-2">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </button>
+            <button onclick="copiarEnlace()" class="redes-btn bg-gray-700 px-4 py-2 rounded-full font-bold text-white flex items-center gap-2">
+                <i class="fas fa-link"></i> Copiar Enlace
+            </button>
+        </div>
+        <p id="mensajeCopiado" class="text-green-400 text-sm mt-2 hidden">✅ ¡Enlace copiado! Pégalo donde quieras</p>
+    </div>
+    
+    <a href="#menu" class="inline-block bg-yellow-500 text-black px-6 py-3 rounded-full font-semibold hover:bg-yellow-400 transition">
+        Ver todo el menú →
+    </a>
+</section>
+
+<!-- 🔹 MENÚ -->
+<section id="menu" class="px-6 pb-16 max-w-7xl mx-auto">
+    <h3 class="text-2xl font-bold mb-8 text-center">Elige tus Platillos</h3>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- 1 -->
+        <div class="platillo-card bg-gray-900 rounded-2xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500" alt="Pasta con Mariscos" 
+                 class="w-full h-52 object-cover" onclick="verImagen('img1')">
+            <div class="p-4">
+                <h4 class="font-bold text-lg">Pasta con Mariscos</h4>
+                <p class="text-gray-400 text-sm mt-1">Fideos con camarón, pollo y aguacate fresco.</p>
+                <p class="text-yellow-400 font-bold mt-2 text-xl">$80</p>
+                <button class="btn-agregar w-full mt-3 py-2 rounded-lg font-bold text-black" 
+                        onclick="agregarAlCarrito('Pasta con Mariscos', 80)">
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
+            </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="platillo-card bg-gray-900 rounded-2xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500" alt="Rolls Fritos" 
+                 class="w-full h-52 object-cover" onclick="verImagen('img2')">
+            <div class="p-4">
+                <h4 class="font-bold text-lg">Rolls Fritos</h4>
+                <p class="text-gray-400 text-sm mt-1">Arroz, queso, verduras — crujientes por fuera.</p>
+                <p class="text-yellow-400 font-bold mt-2 text-xl">$50</p>
+                <button class="btn-agregar w-full mt-3 py-2 rounded-lg font-bold text-black" 
+                        onclick="agregarAlCarrito('Rolls Fritos', 50)">
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
+            </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="platillo-card bg-gray-900 rounded-2xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500" alt="Chilaquiles Xana'" 
+                 class="w-full h-52 object-cover" onclick="verImagen('img3')">
+            <div class="p-4">
+                <h4 class="font-bold text-lg">Chilaquiles Xana'</h4>
+                <p class="text-gray-400 text-sm mt-1">Salsa roja, pollo, frijol, aguacate y crema.</p>
+                <p class="text-yellow-400 font-bold mt-2 text-xl">$60</p>
+                <button class="btn-agregar w-full mt-3 py-2 rounded-lg font-bold text-black" 
+                        onclick="agregarAlCarrito('Chilaquiles Xana\'', 60)">
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
+            </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="platillo-card bg-gray-900 rounded-2xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500" alt="Plato Especial" 
+                 class="w-full h-52 object-cover" onclick="verImagen('img4')">
+            <div class="p-4">
+                <h4 class="font-bold text-lg">Plato Especial</h4>
+                <p class="text-gray-400 text-sm mt-1">Albóndigas, arroz, frijol y malteada.</p>
+                <p class="text-yellow-400 font-bold mt-2 text-xl">$70</p>
+                <button class="btn-agregar w-full mt-3 py-2 rounded-lg font-bold text-black" 
+                        onclick="agregarAlCarrito('Plato Especial', 70)">
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
+            </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="platillo-card bg-gray-900 rounded-2xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1532614200977-7828920d30a9?w=500" alt="Plato para Llevar" 
+                 class="w-full h-52 object-cover" onclick="verImagen('img5')">
+            <div class="p-4">
+                <h4 class="font-bold text-lg">Plato para Llevar</h4>
+                <p class="text-gray-400 text-sm mt-1">Carne en salsa, arroz y ensalada fresca.</p>
+                <p class="text-yellow-400 font-bold mt-2 text-xl">$90</p>
+                <button class="btn-agregar w-full mt-3 py-2 rounded-lg font-bold text-black" 
+                        onclick="agregarAlCarrito('Plato para Llevar', 90)">
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
+            </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="platillo-card bg-gray-900 rounded-2xl overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1567620905732-2d1ec70e2b87?w=500" alt="Desayuno Completo" 
+                 class="w-full h-52 object-cover" onclick="verImagen('img6')">
+            <div class="p-4">
+                <h4 class="font-bold text-lg">Desayuno Completo</h4>
+                <p class="text-gray-400 text-sm mt-1">Hot cakes, fruta y chocolate caliente.</p>
+                <p class="text-yellow-400 font-bold mt-2 text-xl">$40</p>
+                <button class="btn-agregar w-full mt-3 py-2 rounded-lg font-bold text-black" 
+                        onclick="agregarAlCarrito('Desayuno Completo', 40)">
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- 🔹 PEDIDO -->
+<section id="pedido" class="px-6 pb-20 max-w-3xl mx-auto">
+    <h3 class="text-3xl font-bold mb-8 text-center">🛒 Tu Pedido</h3>
+    
+    <div class="seccion-pedido p-6">
+        <div id="listaCarrito" class="mb-6">
+            <p class="text-gray-400 text-center py-4">Tu pedido está vacío. Agrega platillos del menú ↑</p>
+        </div>
+        
+        <div id="totalSeccion" class="hidden border-t border-yellow-700/50 pt-4 mb-6">
+            <p class="text-xl font-bold text-right">Total: <span id="montoTotal" class="text-yellow-400 text-2xl">$0</span></p>
+        </div>
+        
+        <div id="formularioDatos" class="hidden space-y-4 mt-6">
+            <h4 class="text-lg font-bold text-yellow-400">📝 Tus Datos</h4>
+            <input type="text" id="nombreCliente" placeholder="Tu nombre completo" 
+                class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-yellow-500 outline-none">
+            <input type="tel" id="telefonoCliente" placeholder="Tu teléfono" 
+                class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-yellow-500 outline-none">
+            <textarea id="comentarios" placeholder="Dirección de entrega o indicaciones..." 
+                rows="3" class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-yellow-500 outline-none"></textarea>
+            
+            <button onclick="enviarPedido()" 
+                class="w-full bg-green-600 hover:bg-green-500 py-3 rounded-lg font-bold text-lg transition mt-4">
+                ✅ Enviar Pedido
+            </button>
+        </div>
+        
+        <div id="confirmacionPedido" class="hidden text-center py-8">
+            <span class="text-5xl">🎉</span>
+            <h4 class="text-2xl font-bold text-green-400 mt-4">¡Pedido Enviado!</h4>
+            <p class="text-gray-300 mt-2">Recibimos tu pedido. Te contactaremos pronto.</p>
+            <p class="text-yellow-400 mt-4 font-semibold">Gracias por elegir XANA' 🍽️</p>
+            <button onclick="limpiarCarrito()" class="mt-6 bg-yellow-500 text-black px-6 py-2 rounded-full font-bold">
+                Hacer otro pedido
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- 🔹 UBICACIÓN -->
+<section id="ubicacion" class="px-6 py-16 bg-gray-900/50">
+    <div class="max-w-2xl mx-auto text-center">
+        <h3 class="text-3xl font-bold mb-4">📍 Nuestra Ubicación</h3>
+        <p class="text-gray-300 mb-2"><strong>Coordenadas:</strong> 20.202770, -97.704732</p>
+        <a href="https://www.google.com/maps/dir/?api=1&destination=20.202770,-97.704732" 
+           target="_blank" class="btn-ubicacion inline-block px-8 py-4 rounded-full text-lg">
+            🧭 Iniciar Ruta en Tiempo Real
+        </a>
+        <p class="mt-4 text-gray-400 text-sm">Se abrirá con las indicaciones paso a paso ✅</p>
+
+        <div id="mensajeLlegada" class="confirmacion mt-8 p-6 rounded-2xl">
+            <span class="text-3xl">✅</span>
+            <h4 class="text-2xl font-bold mt-2">¡Destino Llegado!</h4>
+            <p class="mt-2">Bienvenido a XANA' 🍽️</p>
+        </div>
+        <button onclick="confirmarLlegada()" class="mt-6 bg-green-600 hover:bg-green-500 px-6 py-3 rounded-full transition">
+            ✅ Ya llegué
+        </button>
+    </div>
+</section>
+
+<footer class="text-center py-8 text-gray-500 text-sm">
+    <p>© 2026 XANA' Restaurante</p>
+</footer>
+
+<!-- 🔹 MODAL IMAGEN -->
+<div id="modalImagen" class="modal-imagen" onclick="cerrarImagen()">
+    <button class="absolute top-4 right-4 text-white text-3xl">&times;</button>
+    <img id="imagenGrande" class="max-w-[90%] max-h-[80vh] rounded-2xl">
+</div>
+
+<script>
+// 🔗 ENLACE DE TU PÁGINA — PON TU ENLACE AQUÍ DESPUÉS DE SUBIRLA
+const enlacePagina = window.location.href;
+const textoMensaje = "🍽️ Mira el menú de XANA' — Haz tu pedido aquí:";
+
+// COMPARTIR EN REDES
+function compartirFacebook() {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(enlacePagina)}`, '_blank');
+}
+function compartirWhatsApp() {
+    window.open(`https://wa.me/?text=${encodeURIComponent(textoMensaje + ' ' + enlacePagina)}`, '_blank');
+}
+function copiarEnlace() {
+    navigator.clipboard.writeText(enlacePagina).then(() => {
+        document.getElementById('mensajeCopiado').classList.remove('hidden');
+        setTimeout(() => document.getElementById('mensajeCopiado').classList.add('hidden'), 3000);
+    });
+}
+
+// 📸 IMÁGENES
+const rutasImagenes = {
+    img1: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900",
+    img2: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=900",
+    img3: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=900",
+    img4: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=900",
+    img5: "https://images.unsplash.com/photo-1532614200977-7828920d30a9?w=900",
+    img6: "https://images.unsplash.com/photo-1567620905732-2d1ec70e2b87?w=900"
+};
+function verImagen(id) {
+    document.getElementById('imagenGrande').src = rutasImagenes[id];
+    document.getElementById('modalImagen').classList.add('activo');
+}
+function cerrarImagen() {
+    document.getElementById('modalImagen').classList.remove('activo');
+}
+
+// 🛒 CARRITO
+let carrito = [];
+function agregarAlCarrito(nombre, precio) {
+    carrito.push({nombre, precio});
+    actualizarCarrito();
+}
+function actualizarCarrito() {
+    const lista = document.getElementById('listaCarrito');
+    const contador = document.getElementById('contadorCarrito');
+    const totalSeccion = document.getElementById('totalSeccion');
+    const formulario = document.getElementById('formularioDatos');
+    
+    contador.textContent = carrito.length;
+    
+    if (carrito.length === 0) {
+        lista.innerHTML = '<p class="text-gray-400 text-center py-4">Tu pedido está vacío. Agrega platillos del menú ↑</p>';
+        totalSeccion.classList.add('hidden');
+        formulario.classList.add('hidden');
+        return;
+    }
+    
+    let total = 0;
+    lista.innerHTML = carrito.map((item, i) => {
+        total += item.precio;
+        return `<div class="flex justify-between items-center py-2 border-b border-gray-800">
+            <span>${item.nombre}</span>
+            <span class="text-yellow-400">$${item.precio}</span>
+            <button onclick="quitarItem(${i})" class="text-red-500 text-sm">✕</button>
+        </div>`;
+    }).join('');
+    
+    document.getElementById('montoTotal').textContent = `$${total}`;
+    totalSeccion.classList.remove('hidden');
+    formulario.classList.remove('hidden');
+}
+function quitarItem(indice) {
+    carrito.splice(indice, 1);
+    actualizarCarrito();
+}
+function limpiarCarrito() {
+    carrito = [];
+    actualizarCarrito();
+    document.getElementById('confirmacionPedido').classList.add('hidden');
+    document.getElementById('nombreCliente').value = '';
+    document.getElementById('telefonoCliente').value = '';
+    document.getElementById('comentarios').value = '';
+}
+function enviarPedido() {
+    const nombre = document.getElementById('nombreCliente').value;
+    const telefono = document.getElementById('telefonoCliente').value;
+    const comentarios = document.getElementById('comentarios').value;
+    
+    if (!nombre || !telefono) {
+        alert('Por favor escribe tu nombre y teléfono ✅');
+        return;
+    }
+    
+    let total = carrito.reduce((s, i) => s + i.precio, 0);
+    let textoPedido = `NUEVO PEDIDO - XANA'%0A%0ANombre: ${nombre}%0ATeléfono: ${telefono}%0AComentarios: ${comentarios || 'Ninguno'}%0A%0APedido:%0A`;
+    carrito.forEach(item => textoPedido += `- ${item.nombre}: $${item.precio}%0A`);
+    textoPedido += `%0ATOTAL: $${total}`;
+    
+    // AQUÍ PONES TU CORREO
+    window.location.href = `mailto:TU-CORREO@AQUI.com?subject=Pedido XANA'&body=${textoPedido}`;
+    
+    document.getElementById('confirmacionPedido').classList.remove('hidden');
+}
+function confirmarLlegada() {
+    document.getElementById('mensajeLlegada').style.display = 'block';
+    document.getElementById('mensajeLlegada').scrollIntoView({behavior: 'smooth'});
+}
+</script>
+
+</body>
+</html>
